@@ -6,23 +6,31 @@ import './style.css'
 
 function App() {
   // const root = ReactDOM.createRoot(document.getElementById('root'))
-//   const apiKey = '9fa0bd6b6465044fc809ee5d027bcc55';
+const apiKey = '9fa0bd6b6465044fc809ee5d027bcc55';
 const [data, setData] = useState(null);
-
-useEffect(() => {
-  fetch("https://api.openweathermap.org/data/2.5/weather?q=chile&lang=sp&appid=9fa0bd6b6465044fc809ee5d027bcc55&units=metric")
-  .then((response)=> response.json())
-  .then((data) => setData(data));
+const [city, setCity] = useState('');
+// useEffect(() => {
+//   fetch("https://api.openweathermap.org/data/2.5/weather?q=chile&lang=sp&appid=9fa0bd6b6465044fc809ee5d027bcc55&units=metric")
+//   .then((response)=> response.json())
+//   .then((data) => setData(data));
   
-},[])
+// },[])
  const icon = data?.weather?.[0]?.icon || '';; // For instance "09d"
-
+ function handleButtonClick(city) {
+  // Aquí puedes procesar el valor del input y la API key
+  // apiKey = 'YOUR_API_KEY';
+  const url = 'https://api.openweathermap.org/data/2.5/weather?q='+city+'&appid='+apiKey+'&units=metric';
+  fetch(url)
+    .then(response => response.json())
+    .then((data) => setData(data))
+    .then(data => console.log(data));
+}
 return(
     <div className='divPadre'>
         
         <div className='Divinput'>
-        <p className='Pciudad'> Ciudad: <input className='InputCity' placeholder='Ciudad' type="text" /></p>
-        <button className='Btn'>Buscar</button>
+        <p className='Pciudad'> Ciudad: <input type="text" value={city} onChange={(e) => setCity(e.target.value)} /></p>
+        <button className='btn' onClick={() => handleButtonClick(city)}>Enviar</button>
         </div>
       <div className='divInfo'>
         <ul>
