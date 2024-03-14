@@ -44,16 +44,16 @@ return(
         </ul>
         <div className='IconW'>
         <img src={'http://openweathermap.org/img/w/'+ icon +'.png'} height="70px" />
-        <div className='ImgBack'>
-        <img className='' src={backimage} alt="" />
-        </div>
+        
         
         </div>
         
             
         
       </div>
-     
+      <div className='ImgBack'>
+        <img className='fondo' src={backimage} alt="" />
+        </div>
     </div>
   );
 
