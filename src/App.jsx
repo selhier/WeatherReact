@@ -3,6 +3,7 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 // import App from './App.jsx'
 import './style.css'
+import backimage from './assets/giphy.gif'
 
 function App() {
   // const root = ReactDOM.createRoot(document.getElementById('root'))
@@ -27,7 +28,6 @@ const [city, setCity] = useState('');
 }
 return(
     <div className='divPadre'>
-        
         <div className='Divinput'>
         <p className='Pciudad'> Ciudad: <input type="text" value={city} onChange={(e) => setCity(e.target.value)} /></p>
         <button className='btn' onClick={() => handleButtonClick(city)}>Enviar</button>
@@ -39,14 +39,21 @@ return(
                 <li>Ciudad: {data.name}</li>
                 <li>Condición climática: {data.weather && data.weather[0].main}</li>
                 <li>Temperatura: {data.main.temp}°C</li>
-               
             </div>
           )}
         </ul>
         <div className='IconW'>
         <img src={'http://openweathermap.org/img/w/'+ icon +'.png'} height="70px" />
+        <div className='ImgBack'>
+        <img className='' src={backimage} alt="" />
         </div>
+        
+        </div>
+        
+            
+        
       </div>
+     
     </div>
   );
 
