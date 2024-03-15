@@ -79,7 +79,7 @@ function App() {
 
       </div>
       <div className="ImgBack">
-        
+        {/* <img className="fondo" src={weatherImage[data?.weather[0]?.main]} alt="Imagen del clima" /> */}
 
       </div>
       </div>
