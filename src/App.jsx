@@ -49,11 +49,16 @@ function App() {
       .then(data => console.log(data));
   }
   return (
+    
     <div className='divPadre'>
+      
       <div className='Divinput'>
-        <p className='Pciudad'> Ciudad: <input type="text" value={city} onChange={(e) => setCity(e.target.value)} /></p>
-        <button className='btn' onClick={() => handleButtonClick(city)}>Enviar</button>
+        <p className='Pciudad'> Ciudad: <input type="text" className='InputCity' value={city} onChange={(e) => setCity(e.target.value)} /></p>
+        <button className='Btn' onClick={() => handleButtonClick(city)}>Enviar
+            <img src="./assets/cloud.svg" alt="" />
+        </button>
       </div>
+      <div className='Wrapper'>
       <div className='divInfo'>
         <ul>
           {data && (
@@ -74,9 +79,11 @@ function App() {
 
       </div>
       <div className="ImgBack">
-        <img className="fondo" src={weatherImage[data?.weather[0]?.main]} alt="Imagen del clima" />
+        
 
       </div>
+      </div>
+     
     </div>
   );
 
