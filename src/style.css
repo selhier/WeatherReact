@@ -197,6 +197,7 @@ li {
 .weather-icon {
   color: #ffffff; /* Cambia este color según tus necesidades */
   margin-right: 0.5rem;
+  
 }
 
 @media (min-width: 768px) {
