@@ -104,7 +104,7 @@ function App() {
 
   return (
     <div className={`divPadre weatherBackground ${weatherClass}`}>
-      {/* Animación de lluvia */}
+      {/* Si se muestra lluvia */}
       {data && data.weather[0].main === 'Rain' && (
         <div className="rain-container">
           {Array.from({ length: 50 }).map((_, index) => (
@@ -120,7 +120,7 @@ function App() {
         </div>
       )}
 
-      {/* Animación de nubes */}
+      {/* Si se muestran nubes (quedarán detrás de la info gracias a su z-index) */}
       {data && data.weather[0].main === 'Clouds' && (
         <div className="clouds">
           <div className="cloud cloud1">
@@ -136,12 +136,11 @@ function App() {
         </div>
       )}
 
-      {/* Contenedor de información del clima */}
+      {/* Contenedor de información */}
       <div className="divInfo">
         <h2>{city}</h2>
         {data &&
           (data.weather[0].main === 'Clear' ? (
-            // En clima Clear, mostrar un sol animado centrado
             <div className="sunny-center"></div>
           ) : (
             <FontAwesomeIcon
@@ -168,7 +167,7 @@ function App() {
         )}
       </div>
 
-      {/* Contenedor para el AsyncSelect, posicionado siempre en la parte inferior del contenedor principal */}
+      {/* Contenedor para el AsyncSelect. Se usa un portal para que el menú se renderice fuera y sea visible */}
       <div className="divInput">
         <AsyncSelect
           cacheOptions
@@ -176,6 +175,10 @@ function App() {
           onChange={handleCityChange}
           placeholder="Selecciona una ciudad..."
           noOptionsMessage={() => 'No hay opciones disponibles'}
+          menuPortalTarget={document.body}
+          styles={{
+            menuPortal: (base) => ({ ...base, zIndex: 9999 })
+          }}
         />
       </div>
     </div>

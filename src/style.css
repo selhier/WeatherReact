@@ -114,37 +114,34 @@ body {
   100% { background: linear-gradient(180deg, #b0b0b0, #707070); }
 } */
 /* Contenedor de nubes: se ubica detrás del contenido */
+/* Animaciones de nubes: el contenedor se coloca con z-index bajo para quedar detrás de la info */
 .clouds {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* No interfiere en la interacción */
+  pointer-events: none;
   overflow: hidden;
-  z-index: 0; /* Asegúrate de que esté detrás de divInfo */
+  z-index: 0;
 }
 
-/* Cada nube compuesta */
 .cloud {
   position: absolute;
   animation: moveClouds 30s linear infinite;
 }
 
-/* Primera nube: posición y movimiento */
 .cloud.cloud1 {
   top: 10%;
   left: -200px;
 }
 
-/* Segunda nube: con retardo en la animación */
 .cloud.cloud2 {
   top: 30%;
   left: -250px;
   animation-delay: 5s;
 }
 
-/* Cada círculo que compone la nube */
 .cloud .circle {
   position: absolute;
   background: #fff;
@@ -152,19 +149,20 @@ body {
   box-shadow: 0 0 20px rgba(240, 237, 237, 0.1);
 }
 
-/* Configuración de los círculos para la primera nube */
 .cloud.cloud1 .circle1 {
   width: 80px;
   height: 80px;
   top: 10px;
   left: 20px;
 }
+
 .cloud.cloud1 .circle2 {
   width: 100px;
   height: 100px;
   top: -10px;
   left: 60px;
 }
+
 .cloud.cloud1 .circle3 {
   width: 70px;
   height: 70px;
@@ -172,19 +170,20 @@ body {
   left: 110px;
 }
 
-/* Configuración de los círculos para la segunda nube */
 .cloud.cloud2 .circle1 {
   width: 90px;
   height: 90px;
   top: 10px;
   left: 30px;
 }
+
 .cloud.cloud2 .circle2 {
   width: 110px;
   height: 110px;
   top: -10px;
   left: 70px;
 }
+
 .cloud.cloud2 .circle3 {
   width: 80px;
   height: 80px;
@@ -192,7 +191,6 @@ body {
   left: 130px;
 }
 
-/* Animación para mover las nubes de izquierda a derecha */
 @keyframes moveClouds {
   0% {
     transform: translateX(0);
@@ -201,7 +199,6 @@ body {
     transform: translateX(120vw);
   }
 }
-
 
 /* 🌧️ Lluvia */
 /* .weatherBackground.Rain {
@@ -336,6 +333,8 @@ body {
 /* Quitar fondo y esquinas de divInfo para que no se vea un recuadro dentro de otro */
 /* Contenedor de información (divInfo) */
 .divInfo {
+  position: relative;
+  z-index: 2;
   width: 100%;
   text-align: center;
   margin-bottom: 1rem;
@@ -355,6 +354,7 @@ body {
 .weatherInfo {
   list-style: none;
   padding: 0;
+  z-index: 2;
   margin: 1rem 0 0;
 }
 
@@ -363,5 +363,6 @@ body {
   align-items: center;
   margin-bottom: 0.5rem;
   font-size: 1.2rem;
+  z-index: 2;
   color: white;
 }
