@@ -1,158 +1,361 @@
 body {
-  background: rgba(0, 176, 255, .7);
+  background: linear-gradient(135deg, #89f7fe, #66a6ff);
+  font-family: 'Roboto', sans-serif;
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  transition: background 1s ease-in-out;
+}
+.divHeader {
+  width: 90%;
+  margin: 1rem auto;
+  padding: 0.5rem;
+  z-index: 3;
+}
+/* Encabezado fijo para el AsyncSelect */
+.header {
+  position: fixed;
+  top: 0rem;
+  right: 0.5rem;
+  width: 100%;
+  background: transparent;
+  
+  padding: 0.5rem;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+}
+/* .divPadre {
+  width: 90%;
+  transition: background 1s ease-in-out;
+} */
+
+/* Transición suave al cambiar de clima */
+/* Asegúrate de que el contenedor permita pseudo-elementos posicionados */
+.weatherBackground {
+  position: relative;
+  overflow: hidden;
+  transition: background 1.5s ease-in-out; /* Transición suave al cambiar de clima */
 }
 
-.center, .center2, .center3 {
+.sunny {
+  background: linear-gradient(180deg, #FFD54F, #FFB300);
+}
+
+/* Usamos ::before para el sol y ::after para los rayos */
+.sunny::before,
+.sunny::after {
+  content: "";
   position: absolute;
+  top: 40%;
+  left: 50%;
   transform: translate(-50%, -50%);
-}
-
-.center {
-  top: 80%;
-  left: 80%;
-}
-
-.center2 {
-  top: 20%;
-  left: 40%;
-}
-
-.center3 {
-  top: 80%;
-}
-
-#cloud {
-  background: rgba(255, 255, 255);
-  width: 20vw;
-  height: 10vw;
   border-radius: 50%;
-  box-shadow: 10px 10px rgba(0, 0, 0, 0.2);
-  animation: move 3s infinite;
+  z-index: 1;
 }
 
-#cloud:after, #cloud:before {
-  content: '';
-  background: rgba(255, 255, 255);
+/* Círculo del sol */
+.sunny::before {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, #FFE066 30%, #FFC107 70%);
+  animation: spinSun 10s linear infinite;
+}
+
+/* Rayos (un halo animado) */
+.sunny::after {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255, 255, 0, 0) 30%, rgba(255, 255, 0, 0.2) 50%, rgba(255, 255, 0, 0) 70%);
+  animation: spinRays 8s linear infinite reverse;
+}
+
+/* Rotaciones */
+@keyframes spinSun {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes spinRays {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* ☀️ Clima despejado */
+/* .weatherBackground.Clear {
+  background: linear-gradient(180deg, #ffcc00, #ff9900);
+  animation: sunnyAnimation 10s infinite alternate ease-in-out;
+}
+
+@keyframes sunnyAnimation {
+  0% { background: linear-gradient(180deg, #ffcc00, #ff9900); }
+  100% { background: linear-gradient(180deg, #ffdd55, #ff6600); }
+} */
+
+/* ☁️ Nublado */
+/* .weatherBackground.Clouds {
+  background: linear-gradient(180deg, #a0a0a0, #808080);
+  animation: cloudyAnimation 5s infinite alternate ease-in-out;
+}
+
+@keyframes cloudyAnimation {
+  0% { background: linear-gradient(180deg, #a0a0a0, #808080); }
+  100% { background: linear-gradient(180deg, #b0b0b0, #707070); }
+} */
+/* Contenedor de nubes: se ubica detrás del contenido */
+.clouds {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* No interfiere en la interacción */
+  overflow: hidden;
+  z-index: 0; /* Asegúrate de que esté detrás de divInfo */
+}
+
+/* Cada nube compuesta */
+.cloud {
+  position: absolute;
+  animation: moveClouds 30s linear infinite;
+}
+
+/* Primera nube: posición y movimiento */
+.cloud.cloud1 {
+  top: 10%;
+  left: -200px;
+}
+
+/* Segunda nube: con retardo en la animación */
+.cloud.cloud2 {
+  top: 30%;
+  left: -250px;
+  animation-delay: 5s;
+}
+
+/* Cada círculo que compone la nube */
+.cloud .circle {
+  position: absolute;
+  background: #fff;
   border-radius: 50%;
+  box-shadow: 0 0 20px rgba(240, 237, 237, 0.1);
 }
 
-#cloud:after {
-  width: 10vw;
-  height: 10vw;
-  top: -5vw;
-  left: 5vw;
+/* Configuración de los círculos para la primera nube */
+.cloud.cloud1 .circle1 {
+  width: 80px;
+  height: 80px;
+  top: 10px;
+  left: 20px;
+}
+.cloud.cloud1 .circle2 {
+  width: 100px;
+  height: 100px;
+  top: -10px;
+  left: 60px;
+}
+.cloud.cloud1 .circle3 {
+  width: 70px;
+  height: 70px;
+  top: 20px;
+  left: 110px;
 }
 
-#cloud:before {
-  width: 17vw;
-  height: 15vw;
-  top: -9vw;
-  right: 4vw;
+/* Configuración de los círculos para la segunda nube */
+.cloud.cloud2 .circle1 {
+  width: 90px;
+  height: 90px;
+  top: 10px;
+  left: 30px;
+}
+.cloud.cloud2 .circle2 {
+  width: 110px;
+  height: 110px;
+  top: -10px;
+  left: 70px;
+}
+.cloud.cloud2 .circle3 {
+  width: 80px;
+  height: 80px;
+  top: 20px;
+  left: 130px;
 }
 
-@keyframes move {
+/* Animación para mover las nubes de izquierda a derecha */
+@keyframes moveClouds {
   0% {
     transform: translateX(0);
   }
-  50% {
-    transform: translateX(-4vw);
+  100% {
+    transform: translateX(120vw);
+  }
+}
+
+
+/* 🌧️ Lluvia */
+/* .weatherBackground.Rain {
+  background: linear-gradient(180deg, #5a5a5a, #2a2a2a);
+  animation: rainAnimation 1s infinite linear;
+}
+
+@keyframes rainAnimation {
+  0% { background: linear-gradient(180deg, #5a5a5a, #2a2a2a); }
+  100% { background: linear-gradient(180deg, #4a4a4a, #1a1a1a); }
+} */
+/* 🌧️ Lluvia */
+/* Contenedor de lluvia en todo el div */
+.rain-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* No interfiere en la interacción */
+  overflow: hidden;
+  z-index: 0; /* Asegúrate de que esté detrás de divInfo */
+}
+/* clear */
+.small-sun {
+  position: absolute;
+  top: 0rem;       /* Ajusta el margen superior según prefieras */
+  left: 0rem;      /* Ajusta el margen izquierdo según prefieras */
+  width: 50px;     /* Tamaño del sol */
+  height: 50px;
+  background: radial-gradient(circle, #FFE066 30%, #FFC107 70%);
+  border-radius: 50%;
+  animation: spinSunSmall 8s linear infinite;
+  box-shadow: 0 0 8px rgba(255, 255, 0, 0.7);
+  z-index: 3;      /* Asegura que se muestre por encima de otros elementos */
+}
+/* Sol animado centrado para clima Clear */
+.sunny-center {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, #FFE066 30%, #FFC107 70%);
+  border-radius: 50%;
+  animation: spinSun 10s linear infinite;
+  box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+  margin: 0 auto 1rem;
+}
+
+/* Si ya tienes definida la animación spinSun, no es necesario repetirla.
+   De lo contrario, puedes agregar: */
+@keyframes spinSun {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {  
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinSunSmall {
+  0% {
+    transform: rotate(0deg);
   }
   100% {
-    transform: translateX(0);
+    transform: rotate(360deg);
   }
 }
 
-.divPadre {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  /* background: url('./assets/cloudy.gif') no-repeat center center fixed; */
-  background-size: cover;
+/* Cada gota de lluvia */
+.raindrop {
+  position: absolute;
+  bottom: 100%;
+  width: 2px; /* Aumenta el grosor */
+  height: 25px; /* Un poco más largas */
+  background: rgba(255, 255, 255, 0.8); /* Color blanco con mayor opacidad */
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9); /* Efecto resplandor */
+  animation: rainFall 0.8s linear infinite;
 }
 
-.divInfo {
-  width: 80%;
+
+@keyframes rainFall {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+
+/* ❄️ Nieve */
+.weatherBackground.Snow {
+  background: linear-gradient(180deg, #ffffff, #d9e3f0);
+  animation: snowAnimation 5s infinite alternate ease-in-out;
+}
+
+@keyframes snowAnimation {
+  0% { background: linear-gradient(180deg, #ffffff, #d9e3f0); }
+  100% { background: linear-gradient(180deg, #f0f8ff, #d0e0f0); }
+}
+
+/* ⚡ Tormenta */
+.weatherBackground.Thunderstorm {
+  background: linear-gradient(180deg, #333, #111);
+  animation: thunderAnimation 2s infinite;
+}
+
+@keyframes thunderAnimation {
+  0%, 100% { background: linear-gradient(180deg, #333, #111); }
+  50% { background: linear-gradient(180deg, #666, #222); }
+}
+
+/* Contenedor principal centrado y responsive */
+.divPadre {
+  position: relative;
+  width: 90%;
   max-width: 30rem;
-  height: auto;
-  padding: 1.5rem;
-  text-align: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: large;
-  font-weight: bold;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 1.5rem;
+  z-index: 1;
 }
 
-.Divinput {
-  font-size: large;
-  font-weight: bold;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Quitar fondo y esquinas de divInfo para que no se vea un recuadro dentro de otro */
+/* Contenedor de información (divInfo) */
+.divInfo {
+  width: 100%;
+  text-align: center;
   margin-bottom: 1rem;
 }
 
-.InputCity {
-  border: none;
-  border-radius: 10px;
-  height: 2.5rem;
-  margin-bottom: 10px;
-  padding: 0.5rem 1rem;
+/* Contenedor del AsyncSelect (divInput) */
+.divInput {
   width: 100%;
-  max-width: 20rem;
-  font-size: 1rem;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: box-shadow 0.3s ease;
+  max-width: 90%;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
-.InputCity:focus {
-  outline: none;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
-}
-
-.Btn {
-  width: 8rem;
-  height: 3rem;
-  border-radius: 3rem;
-  border-style: none;
-  background: #007bff;
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.Btn:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
-}
-
-li {
-  list-style-type: none;
-}
-
+/* Lista de información del clima */
 .weatherInfo {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
-  margin: 1rem 0;
+  margin: 1rem 0 0;
 }
 
 .weatherInfo li {
@@ -160,58 +363,5 @@ li {
   align-items: center;
   margin-bottom: 0.5rem;
   font-size: 1.2rem;
-}
-
-.weatherInfo li span {
-  margin-right: 0.5rem;
-}
-
-.weatherBackground.Clear .icon {
-  content: '\f00d'; /* sunny icon */
-}
-
-.weatherBackground.Rain .icon {
-  content: '\f019'; /* rainy icon */
-}
-
-.weatherBackground.Clouds .icon {
-  content: '\f013'; /* cloudy icon */
-}
-
-.weatherBackground.Snow .icon {
-  content: '\f076'; /* snow icon */
-}
-
-.weatherBackground.Thunderstorm .icon {
-  content: '\f01e'; /* thunderstorm icon */
-}
-
-.weatherBackground.Drizzle .icon {
-  content: '\f01c'; /* drizzle icon */
-}
-
-.weatherBackground.Mist .icon {
-  content: '\f014'; /* mist icon */
-}
-
-.weather-icon {
-  color: #ffffff; /* Cambia este color según tus necesidades */
-  margin-right: 0.5rem;
-  
-}
-
-@media (min-width: 768px) {
-  .Divinput {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .InputCity {
-    margin-right: 0;
-    margin-bottom: 1rem;
-  }
-
-  .Btn {
-    margin-top: 0;
-  }
+  color: white;
 }
