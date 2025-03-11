@@ -2,18 +2,14 @@ import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faSun,
   faCloud,
   faCloudRain,
   faSnowflake,
   faBolt,
   faSmog,
   faCloudShowersHeavy,
-  faThermometerHalf,
-  faTint,
-  faWind,
-  faStar,
-  faExchangeAlt
+  faExchangeAlt,
+  faStar
 } from '@fortawesome/free-solid-svg-icons';
 import './style.css';
 
@@ -28,6 +24,7 @@ function App() {
   const [language, setLanguage] = useState('en');
   const [favorites, setFavorites] = useState([]);
   const [history, setHistory] = useState([]);
+  const [activeTab, setActiveTab] = useState('weather'); // 'weather' o 'forecast'
 
   // Obtener ubicación y ciudad inicial
   useEffect(() => {
@@ -129,24 +126,40 @@ function App() {
     fetchWeather(fav);
   };
 
-  const getWeatherIcon = (weather) => {
+  // Función auxiliar para determinar si es de día o noche en condiciones "Clear"
+  const getClearIcon = (timestamp = Math.floor(Date.now() / 1000)) => {
+    if (weatherData && weatherData.sys) {
+      const { sunrise, sunset } = weatherData.sys;
+      // Si el timestamp es menor que el amanecer o mayor que el atardecer, es de noche
+      if (timestamp < sunrise || timestamp > sunset) {
+        return <div className="moon-icon"></div>;
+      } else {
+        return <div className="sunny-icon"></div>;
+      }
+    }
+    // Fallback
+    return <div className="sunny-icon"></div>;
+  };
+
+  // Función que retorna el icono apropiado según el tipo de clima
+  const getWeatherIcon = (weather, timestamp) => {
     switch (weather) {
       case 'Clear':
-        return faSun;
+        return getClearIcon(timestamp);
       case 'Rain':
-        return faCloudShowersHeavy;
+        return <FontAwesomeIcon icon={faCloudShowersHeavy} className="weather-icon" />;
       case 'Clouds':
-        return faCloud;
+        return <FontAwesomeIcon icon={faCloud} className="weather-icon" />;
       case 'Snow':
-        return faSnowflake;
+        return <FontAwesomeIcon icon={faSnowflake} className="weather-icon" />;
       case 'Thunderstorm':
-        return faBolt;
+        return <FontAwesomeIcon icon={faBolt} className="weather-icon" />;
       case 'Drizzle':
-        return faCloudRain;
+        return <FontAwesomeIcon icon={faCloudRain} className="weather-icon" />;
       case 'Mist':
-        return faSmog;
+        return <FontAwesomeIcon icon={faSmog} className="weather-icon" />;
       default:
-        return faSun;
+        return <FontAwesomeIcon icon={faCloud} className="weather-icon" />;
     }
   };
 
@@ -163,8 +176,8 @@ function App() {
   return (
     <div className={`divPadre weatherBackground ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
       {error && <div className="error">{error}</div>}
-  
-      {/* Header interno se mantiene arriba */}
+
+      {/* Header interno */}
       <div className="headerInside">
         <AsyncSelect
           cacheOptions
@@ -183,83 +196,103 @@ function App() {
           <option value="es">ES</option>
         </select>
       </div>
-  
-      {/* Contenedor horizontal para el resto de la información */}
-      <div className="mainContainer">
-        <div className="divInfo">
-          <h2>{city}</h2>
-          {weatherData ? (
-            <div className="weatherMain">
-              {weatherData.weather[0].main === 'Clear' ? (
-                <div className="sunny-center"></div>
-              ) : (
-                <FontAwesomeIcon
-                  icon={getWeatherIcon(weatherData.weather[0].main)}
-                  size="4x"
-                  className="weather-icon"
-                />
-              )}
-              <div className="weatherDetails">
-                <p>Temperatura: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-                <p>Sensación: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
-                <p>Humedad: {weatherData.main.humidity}%</p>
-                <p>Viento: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
-                <p>Presión: {weatherData.main.pressure} hPa</p>
-                <p>Amanecer: {formatTime(weatherData.sys.sunrise)}</p>
-                <p>Atardecer: {formatTime(weatherData.sys.sunset)}</p>
-                <p>Condición: {weatherData.weather[0].description}</p>
+
+      {/* Contenedor de pestañas */}
+      <div className="tabs">
+        <button className={activeTab === 'weather' ? 'active' : ''} onClick={() => setActiveTab('weather')}>
+          Clima
+        </button>
+        <button className={activeTab === 'forecast' ? 'active' : ''} onClick={() => setActiveTab('forecast')}>
+          Pronóstico
+        </button>
+      </div>
+
+      {/* Renderizado condicional según pestaña */}
+      {activeTab === 'weather' ? (
+        <div className="mainContainer">
+          <div className="divInfo">
+            <h2>{city}</h2>
+            {weatherData ? (
+              <div className="weatherMain">
+                {weatherData.weather[0].main === 'Clear' ? (
+                  // Usamos el helper para obtener sol o luna según la hora actual
+                  getClearIcon()
+                ) : (
+                  getWeatherIcon(weatherData.weather[0].main)
+                )}
+                <div className="weatherDetails">
+                  <p>Temperatura: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>Sensación: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>Humedad: {weatherData.main.humidity}%</p>
+                  <p>Viento: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
+                  <p>Presión: {weatherData.main.pressure} hPa</p>
+                  <p>Amanecer: {formatTime(weatherData.sys.sunrise)}</p>
+                  <p>Atardecer: {formatTime(weatherData.sys.sunset)}</p>
+                  <p>Condición: {weatherData.weather[0].description}</p>
+                </div>
+                <button className="favoriteButton" onClick={addFavorite}>
+                  <FontAwesomeIcon icon={faStar} /> Agregar a Favoritos
+                </button>
               </div>
-              <button className="favoriteButton" onClick={addFavorite}>
-                <FontAwesomeIcon icon={faStar} /> Agregar a Favoritos
-              </button>
+            ) : (
+              <p>Cargando datos...</p>
+            )}
+          </div>
+
+          {favorites.length > 0 && (
+            <div className="favorites">
+              <h3>Favoritos</h3>
+              <div className="favoritesList">
+                {favorites.map((fav, index) => (
+                  <button key={index} className="favoriteItem" onClick={() => selectFavorite(fav)}>
+                    {fav}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : (
-            <p>Cargando datos...</p>
+          )}
+
+          {history.length > 0 && (
+            <div className="history">
+              <h3>Historial</h3>
+              <div className="historyList">
+                {history.map((item, index) => (
+                  <span key={index} className="historyItem">{item}</span>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-  
-        {dailyForecast.length > 0 && (
-          <div className="forecast">
-            <h3>Pronóstico</h3>
-            <div className="forecastList">
-              {dailyForecast.map((item) => (
-                <div key={item.dt} className="forecastItem">
-                  <p>{new Date(item.dt * 1000).toLocaleDateString(language, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-                  <FontAwesomeIcon icon={getWeatherIcon(item.weather[0].main)} className="weather-icon" />
-                  <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-                </div>
-              ))}
-            </div>
+      ) : (
+        <div className="forecast">
+          {/* Encabezado del pronóstico que muestra ciudad y país (si se dispone) */}
+          <h3>
+            Pronóstico para {weatherData ? `${weatherData.name}, ${weatherData.sys.country}` : city}
+          </h3>
+          <div className="forecastList">
+            {dailyForecast.map((item) => (
+              <div key={item.dt} className="forecastItem">
+                <p>
+                  {new Date(item.dt * 1000).toLocaleDateString(language, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </p>
+                {item.weather[0].main === 'Clear' ? (
+                  // Para cada ítem del pronóstico, usamos su timestamp (item.dt)
+                  getClearIcon(item.dt)
+                ) : (
+                  getWeatherIcon(item.weather[0].main, item.dt)
+                )}
+                <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
+              </div>
+            ))}
           </div>
-        )}
-  
-        {favorites.length > 0 && (
-          <div className="favorites">
-            <h3>Favoritos</h3>
-            <div className="favoritesList">
-              {favorites.map((fav, index) => (
-                <button key={index} className="favoriteItem" onClick={() => selectFavorite(fav)}>
-                  {fav}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-  
-        {history.length > 0 && (
-          <div className="history">
-            <h3>Historial</h3>
-            <div className="historyList">
-              {history.map((item, index) => (
-                <span key={index} className="historyItem">{item}</span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
-  
 }
 
 export default App;

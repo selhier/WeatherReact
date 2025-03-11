@@ -11,6 +11,92 @@ body {
   transition: background 1s ease-in-out;
   overflow: hidden; /* Oculta scroll global */
 }
+
+/* Contenedor principal modificado a 180% */
+.divPadre {
+  position: relative;
+  width: 200%;
+  max-width: none; /* Se puede eliminar o ajustar si se requiere */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  z-index: 1;
+  margin: 1rem auto;
+  margin-right: 10rem;
+  overflow: visible;
+  right: 20rem;
+}
+
+/* Contenedor de pestañas */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  pointer-events: auto; /* Aseguramos la interactividad */
+  z-index: 10;
+}
+
+.tabs button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+  pointer-events: auto; /* Forzamos que sean interactivos */
+  z-index: 11;
+}
+
+.tabs button.active,
+.tabs button:hover {
+  background: rgba(255, 255, 255, 0.5);
+  font-weight: bold;
+}
+
+/* Estilo para el botón de Favoritos */
+.favoriteButton {
+  background: rgba(255, 215, 0, 0.8); /* Color dorado */
+  border: none;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.3s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin-top: 1rem;
+}
+
+.favoriteButton:hover {
+  background: rgba(255, 215, 0, 1);
+  transform: scale(1.05);
+}
+
+.favoriteButton:active {
+  transform: scale(0.95);
+}
+
+/* Resto de estilos se mantienen sin cambios */
+/* ... */
+
+
+/* Opcional: ajustar el contenedor principal para la pestaña de clima */
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
 /* Contenedor principal para secciones horizontales */
 .mainContainer {
   display: flex;
@@ -28,24 +114,7 @@ body {
 }
 
 /* Contenedor principal - se aumentó el max-width para mayor amplitud */
-.divPadre {
-  position: relative;
-  width: 95%;
-  max-width: 60rem; /* Aumentado para que toda la info se vea a lo ancho */
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
-  z-index: 1;
-  margin: 1rem auto;
-  overflow: visible;
-}
+
 
 /* Header interno */
 .headerInside {
@@ -225,17 +294,46 @@ body {
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* Sol centrado */
-.sunny-center {
-  width: 150px;
-  height: 150px;
+/* Sol pequeño */
+.sunny-icon {
+  width: 40px;
+  height: 40px;
   background: radial-gradient(circle, #FFE066 30%, #FFC107 70%);
   border-radius: 50%;
+  box-shadow: 0 0 5px rgba(255,255,0,0.7);
   animation: spinSun 10s linear infinite;
-  box-shadow: 0 0 15px rgba(255,255,0,0.7);
-  margin: 0 auto 1rem;
+  margin: 0 auto;
   pointer-events: none;
 }
+
+/* Luna pequeña */
+.moon-icon {
+  width: 40px;
+  height: 40px;
+  background: #F0E68C;
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+  pointer-events: none;
+}
+.moon-icon::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 30% 30%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.2) 100%);
+  border-radius: 50%;
+}
+
+/* La keyframe spinSun ya está definida */
+@keyframes spinSun {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
 
 /* Clima de nieve */
 .weatherBackground.Snow {
