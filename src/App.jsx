@@ -25,7 +25,7 @@ function App() {
   const [favorites, setFavorites] = useState([]);
   const [history, setHistory] = useState([]);
   const [activeTab, setActiveTab] = useState('weather'); // 'weather' o 'forecast'
-
+  const [forecastMode, setForecastMode] = useState('hours'); // 'hours' o 'days'
   // Obtener ubicación y ciudad inicial
   useEffect(() => {
     if (navigator.geolocation) {
@@ -207,15 +207,14 @@ function App() {
         </button>
       </div>
 
-      {/* Renderizado condicional según pestaña */}
       {activeTab === 'weather' ? (
         <div className="mainContainer">
+          {/* Contenido de clima */}
           <div className="divInfo">
             <h2>{city}</h2>
             {weatherData ? (
               <div className="weatherMain">
                 {weatherData.weather[0].main === 'Clear' ? (
-                  // Usamos el helper para obtener sol o luna según la hora actual
                   getClearIcon()
                 ) : (
                   getWeatherIcon(weatherData.weather[0].main)
@@ -238,7 +237,6 @@ function App() {
               <p>Cargando datos...</p>
             )}
           </div>
-
           {favorites.length > 0 && (
             <div className="favorites">
               <h3>Favoritos</h3>
@@ -251,7 +249,6 @@ function App() {
               </div>
             </div>
           )}
-
           {history.length > 0 && (
             <div className="history">
               <h3>Historial</h3>
@@ -265,29 +262,68 @@ function App() {
         </div>
       ) : (
         <div className="forecast">
-          {/* Encabezado del pronóstico que muestra ciudad y país (si se dispone) */}
           <h3>
             Pronóstico para {weatherData ? `${weatherData.name}, ${weatherData.sys.country}` : city}
           </h3>
+          <div className="forecastModeTabs">
+            <button
+              className={forecastMode === 'hours' ? 'active' : ''}
+              onClick={() => setForecastMode('hours')}
+            >
+              Próximas Horas
+            </button>
+            <button
+              className={forecastMode === 'days' ? 'active' : ''}
+              onClick={() => setForecastMode('days')}
+            >
+              Próximos Días
+            </button>
+          </div>
           <div className="forecastList">
-            {dailyForecast.map((item) => (
-              <div key={item.dt} className="forecastItem">
-                <p>
-                  {new Date(item.dt * 1000).toLocaleDateString(language, {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </p>
-                {item.weather[0].main === 'Clear' ? (
-                  // Para cada ítem del pronóstico, usamos su timestamp (item.dt)
-                  getClearIcon(item.dt)
-                ) : (
-                  getWeatherIcon(item.weather[0].main, item.dt)
-                )}
-                <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-              </div>
-            ))}
+            {forecastMode === 'days'
+              ? dailyForecast.map((item) => (
+                  <div key={item.dt} className="forecastItem">
+                    <p>
+                      {new Date(item.dt * 1000).toLocaleDateString(language, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <p>
+                      {new Date(item.dt * 1000).toLocaleTimeString(language, {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                    {item.weather[0].main === 'Clear' ? (
+                      getClearIcon(item.dt)
+                    ) : (
+                      getWeatherIcon(item.weather[0].main, item.dt)
+                    )}
+                    <p>
+                      {item.main.temp} {unit === 'metric' ? '°C' : '°F'}
+                    </p>
+                  </div>
+                ))
+              : forecastData.slice(0, 5).map((item) => (
+                  <div key={item.dt} className="forecastItem">
+                    <p>
+                      {new Date(item.dt * 1000).toLocaleTimeString(language, {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                    {item.weather[0].main === 'Clear' ? (
+                      getClearIcon(item.dt)
+                    ) : (
+                      getWeatherIcon(item.weather[0].main, item.dt)
+                    )}
+                    <p>
+                      {item.main.temp} {unit === 'metric' ? '°C' : '°F'}
+                    </p>
+                  </div>
+                ))}
           </div>
         </div>
       )}
