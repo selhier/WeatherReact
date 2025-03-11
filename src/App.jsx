@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import AsyncSelect from 'react-select/async';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCloud,
-  faCloudRain,
-  faSnowflake,
-  faBolt,
-  faSmog,
-  faCloudShowersHeavy,
   faExchangeAlt,
   faStar,
   faSun
@@ -129,12 +123,11 @@ function App() {
     setActiveTab('weather');
   };
 
-  // Función auxiliar para el icono en condiciones "Clear"
+  // Función auxiliar para "Clear": si es de día o de noche
   const getClearIcon = (timestamp = Math.floor(Date.now() / 1000)) => {
     if (weatherData && weatherData.sys) {
       const { sunrise, sunset } = weatherData.sys;
       if (timestamp < sunrise || timestamp > sunset) {
-        // Noche (por simplicidad mostramos un icono simple)
         return <div className="moon-icon">🌙</div>;
       } else {
         return <div className="sunny-icon"></div>;
@@ -143,25 +136,25 @@ function App() {
     return <div className="sunny-icon"></div>;
   };
 
-  // Función para retornar el icono según el clima
+  // Función para retornar el ícono según el estado del clima utilizando clases CSS
   const getWeatherIcon = (weather, timestamp) => {
     switch (weather) {
       case 'Clear':
         return getClearIcon(timestamp);
       case 'Rain':
-        return <FontAwesomeIcon icon={faCloudShowersHeavy} className="weather-icon" />;
+        return <div className="rain-icon"></div>;
       case 'Clouds':
-        return <FontAwesomeIcon icon={faCloud} className="weather-icon" />;
+        return <div className="cloud-icon"></div>;
       case 'Snow':
-        return <FontAwesomeIcon icon={faSnowflake} className="weather-icon" />;
+        return <div className="snow-icon"></div>;
       case 'Thunderstorm':
-        return <FontAwesomeIcon icon={faBolt} className="weather-icon" />;
+        return <div className="thunder-icon"></div>;
       case 'Drizzle':
-        return <FontAwesomeIcon icon={faCloudRain} className="weather-icon" />;
+        return <div className="drizzle-icon"></div>;
       case 'Mist':
-        return <FontAwesomeIcon icon={faSmog} className="weather-icon" />;
+        return <div className="mist-icon"></div>;
       default:
-        return <FontAwesomeIcon icon={faCloud} className="weather-icon" />;
+        return <div className="cloud-icon"></div>;
     }
   };
 
@@ -173,9 +166,30 @@ function App() {
     return date.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Asignar clase de fondo para nubes o lluvia según el estado
+  let backgroundClass = '';
+  if (weatherData) {
+    if (weatherData.weather[0].main === 'Clouds') {
+      backgroundClass = 'Clouds';
+    } else if (weatherData.weather[0].main === 'Rain') {
+      backgroundClass = 'Rain';
+    }
+  }
+
   return (
-    <div className={`divPadre weatherBackground ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
+    <div className={`divPadre weatherBackground ${backgroundClass} ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
       {error && <div className="error">{error}</div>}
+
+      {/* Renderizado de animación de nubes si el clima es Clouds o Rain */}
+      {weatherData && (weatherData.weather[0].main === 'Clouds' || weatherData.weather[0].main === 'Rain') && (
+        <div id="background-wrap">
+          <div className="x1"><div className="cloud"></div></div>
+          <div className="x2"><div className="cloud"></div></div>
+          <div className="x3"><div className="cloud"></div></div>
+          <div className="x4"><div className="cloud"></div></div>
+          <div className="x5"><div className="cloud"></div></div>
+        </div>
+      )}
 
       {/* Header interno */}
       <div className="headerInside">
@@ -197,7 +211,7 @@ function App() {
         </select>
       </div>
 
-      {/* Pestañas */}
+      {/* Pestañas de Navegación */}
       <div className="tabs">
         <button className={activeTab === 'weather' ? 'active' : ''} onClick={() => setActiveTab('weather')}>
           Clima
@@ -224,16 +238,10 @@ function App() {
                   ? getClearIcon()
                   : getWeatherIcon(weatherData.weather[0].main)}
                 <div className="weatherDetails">
-                  <p>
-                    Temperatura: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}
-                  </p>
-                  <p>
-                    Sensación: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}
-                  </p>
+                  <p>Temperatura: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>Sensación: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
                   <p>Humedad: {weatherData.main.humidity}%</p>
-                  <p>
-                    Viento: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}
-                  </p>
+                  <p>Viento: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
                   <p>Presión: {weatherData.main.pressure} hPa</p>
                   <p>Amanecer: {formatTime(weatherData.sys.sunrise)}</p>
                   <p>Atardecer: {formatTime(weatherData.sys.sunset)}</p>
@@ -252,9 +260,7 @@ function App() {
 
       {activeTab === 'forecast' && (
         <div className="forecast">
-          <h3>
-            Pronóstico para {weatherData ? `${weatherData.name}, ${weatherData.sys.country}` : city}
-          </h3>
+          <h3>Pronóstico para {weatherData ? `${weatherData.name}, ${weatherData.sys.country}` : city}</h3>
           <div className="forecastModeTabs">
             <button
               className={forecastMode === 'hours' ? 'active' : ''}
@@ -273,41 +279,31 @@ function App() {
             {forecastMode === 'days'
               ? dailyForecast.map((item) => (
                   <div key={item.dt} className="forecastItem">
-                    <p>
-                      {new Date(item.dt * 1000).toLocaleDateString(language, {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    <p>
-                      {new Date(item.dt * 1000).toLocaleTimeString(language, {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
+                    <p>{new Date(item.dt * 1000).toLocaleDateString(language, {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    })}</p>
+                    <p>{new Date(item.dt * 1000).toLocaleTimeString(language, {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</p>
                     {item.weather[0].main === 'Clear'
                       ? getClearIcon(item.dt)
                       : getWeatherIcon(item.weather[0].main, item.dt)}
-                    <p>
-                      {item.main.temp} {unit === 'metric' ? '°C' : '°F'}
-                    </p>
+                    <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
                   </div>
                 ))
               : forecastData.slice(0, 5).map((item) => (
                   <div key={item.dt} className="forecastItem">
-                    <p>
-                      {new Date(item.dt * 1000).toLocaleTimeString(language, {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
+                    <p>{new Date(item.dt * 1000).toLocaleTimeString(language, {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</p>
                     {item.weather[0].main === 'Clear'
                       ? getClearIcon(item.dt)
                       : getWeatherIcon(item.weather[0].main, item.dt)}
-                    <p>
-                      {item.main.temp} {unit === 'metric' ? '°C' : '°F'}
-                    </p>
+                    <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
                   </div>
                 ))}
           </div>
