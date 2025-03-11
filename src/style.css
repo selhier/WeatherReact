@@ -11,15 +11,30 @@ body {
   transition: background 1s ease-in-out;
   overflow: hidden; /* Oculta scroll global */
 }
+/* Contenedor principal para secciones horizontales */
+.mainContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  width: 100%;
+  overflow-x: auto; /* Permite scroll horizontal en pantallas pequeñas */
+  padding: 1rem 0;
+}
 
-/* Contenedor principal - ahora más ancho */
+/* Asegura que cada sección tenga un ancho mínimo para mostrarse bien */
+.divInfo, .forecast, .favorites, .history {
+  flex: 1 0 250px; /* Crece, no se encoge por debajo de 250px */
+}
+
+/* Contenedor principal - se aumentó el max-width para mayor amplitud */
 .divPadre {
   position: relative;
   width: 95%;
-  max-width: 60rem; /* Se aumentó el ancho máximo */
+  max-width: 60rem; /* Aumentado para que toda la info se vea a lo ancho */
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -83,7 +98,7 @@ body {
   pointer-events: auto;
 }
 
-/* Nubes: se aseguran de no bloquear interactividad */
+/* Nubes: se asegura que no interfieran */
 .clouds {
   pointer-events: none !important;
   overflow: visible;
@@ -301,7 +316,7 @@ body {
   pointer-events: auto;
 }
 
-/* Favoritos */
+/* Favoritos: se usa scroll horizontal para no crecer verticalmente */
 .favorites {
   width: 100%;
   margin-top: 1rem;
@@ -311,9 +326,11 @@ body {
 }
 .favoritesList {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.5rem;
+  overflow-x: auto;
+  width: 100%;
+  padding: 0.5rem 0;
   pointer-events: auto;
 }
 .favoriteItem {
@@ -327,7 +344,7 @@ body {
   pointer-events: auto;
 }
 
-/* Historial */
+/* Historial: scroll horizontal para mantenerlo en una sola fila */
 .history {
   width: 100%;
   margin-top: 1rem;
@@ -337,9 +354,11 @@ body {
 }
 .historyList {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.5rem;
+  overflow-x: auto;
+  width: 100%;
+  padding: 0.5rem 0;
   pointer-events: auto;
 }
 .historyItem {
