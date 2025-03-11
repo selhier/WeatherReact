@@ -9,7 +9,8 @@ import {
   faSmog,
   faCloudShowersHeavy,
   faExchangeAlt,
-  faStar
+  faStar,
+  faSun
 } from '@fortawesome/free-solid-svg-icons';
 import './style.css';
 
@@ -20,12 +21,13 @@ function App() {
   const [weatherData, setWeatherData] = useState(null);
   const [forecastData, setForecastData] = useState([]);
   const [error, setError] = useState('');
-  const [unit, setUnit] = useState('metric'); // metric: °C, imperial: °F
+  const [unit, setUnit] = useState('metric'); // 'metric' para °C, 'imperial' para °F
   const [language, setLanguage] = useState('en');
   const [favorites, setFavorites] = useState([]);
   const [history, setHistory] = useState([]);
-  const [activeTab, setActiveTab] = useState('weather'); // 'weather' o 'forecast'
-  const [forecastMode, setForecastMode] = useState('hours'); // 'hours' o 'days'
+  const [activeTab, setActiveTab] = useState('weather'); // 'weather', 'forecast', 'favorites', 'history'
+  const [forecastMode, setForecastMode] = useState('days'); // 'hours' o 'days'
+
   // Obtener ubicación y ciudad inicial
   useEffect(() => {
     if (navigator.geolocation) {
@@ -124,24 +126,24 @@ function App() {
   const selectFavorite = (fav) => {
     setCity(fav);
     fetchWeather(fav);
+    setActiveTab('weather');
   };
 
-  // Función auxiliar para determinar si es de día o noche en condiciones "Clear"
+  // Función auxiliar para el icono en condiciones "Clear"
   const getClearIcon = (timestamp = Math.floor(Date.now() / 1000)) => {
     if (weatherData && weatherData.sys) {
       const { sunrise, sunset } = weatherData.sys;
-      // Si el timestamp es menor que el amanecer o mayor que el atardecer, es de noche
       if (timestamp < sunrise || timestamp > sunset) {
-        return <div className="moon-icon"></div>;
+        // Noche (por simplicidad mostramos un icono simple)
+        return <div className="moon-icon">🌙</div>;
       } else {
         return <div className="sunny-icon"></div>;
       }
     }
-    // Fallback
     return <div className="sunny-icon"></div>;
   };
 
-  // Función que retorna el icono apropiado según el tipo de clima
+  // Función para retornar el icono según el clima
   const getWeatherIcon = (weather, timestamp) => {
     switch (weather) {
       case 'Clear':
@@ -164,9 +166,7 @@ function App() {
   };
 
   // Filtrar el pronóstico para datos diarios a las 12:00
-  const dailyForecast = forecastData.filter((item) =>
-    item.dt_txt.includes('12:00:00')
-  );
+  const dailyForecast = forecastData.filter((item) => item.dt_txt.includes('12:00:00'));
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp * 1000);
@@ -197,7 +197,7 @@ function App() {
         </select>
       </div>
 
-      {/* Contenedor de pestañas */}
+      {/* Pestañas */}
       <div className="tabs">
         <button className={activeTab === 'weather' ? 'active' : ''} onClick={() => setActiveTab('weather')}>
           Clima
@@ -205,25 +205,35 @@ function App() {
         <button className={activeTab === 'forecast' ? 'active' : ''} onClick={() => setActiveTab('forecast')}>
           Pronóstico
         </button>
+        <button className={activeTab === 'favorites' ? 'active' : ''} onClick={() => setActiveTab('favorites')}>
+          Favoritos
+        </button>
+        <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>
+          Historial
+        </button>
       </div>
 
-      {activeTab === 'weather' ? (
+      {/* Contenido según pestaña */}
+      {activeTab === 'weather' && (
         <div className="mainContainer">
-          {/* Contenido de clima */}
           <div className="divInfo">
             <h2>{city}</h2>
             {weatherData ? (
               <div className="weatherMain">
-                {weatherData.weather[0].main === 'Clear' ? (
-                  getClearIcon()
-                ) : (
-                  getWeatherIcon(weatherData.weather[0].main)
-                )}
+                {weatherData.weather[0].main === 'Clear'
+                  ? getClearIcon()
+                  : getWeatherIcon(weatherData.weather[0].main)}
                 <div className="weatherDetails">
-                  <p>Temperatura: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-                  <p>Sensación: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>
+                    Temperatura: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}
+                  </p>
+                  <p>
+                    Sensación: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}
+                  </p>
                   <p>Humedad: {weatherData.main.humidity}%</p>
-                  <p>Viento: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
+                  <p>
+                    Viento: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}
+                  </p>
                   <p>Presión: {weatherData.main.pressure} hPa</p>
                   <p>Amanecer: {formatTime(weatherData.sys.sunrise)}</p>
                   <p>Atardecer: {formatTime(weatherData.sys.sunset)}</p>
@@ -237,30 +247,10 @@ function App() {
               <p>Cargando datos...</p>
             )}
           </div>
-          {favorites.length > 0 && (
-            <div className="favorites">
-              <h3>Favoritos</h3>
-              <div className="favoritesList">
-                {favorites.map((fav, index) => (
-                  <button key={index} className="favoriteItem" onClick={() => selectFavorite(fav)}>
-                    {fav}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {history.length > 0 && (
-            <div className="history">
-              <h3>Historial</h3>
-              <div className="historyList">
-                {history.map((item, index) => (
-                  <span key={index} className="historyItem">{item}</span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'forecast' && (
         <div className="forecast">
           <h3>
             Pronóstico para {weatherData ? `${weatherData.name}, ${weatherData.sys.country}` : city}
@@ -296,11 +286,9 @@ function App() {
                         minute: '2-digit'
                       })}
                     </p>
-                    {item.weather[0].main === 'Clear' ? (
-                      getClearIcon(item.dt)
-                    ) : (
-                      getWeatherIcon(item.weather[0].main, item.dt)
-                    )}
+                    {item.weather[0].main === 'Clear'
+                      ? getClearIcon(item.dt)
+                      : getWeatherIcon(item.weather[0].main, item.dt)}
                     <p>
                       {item.main.temp} {unit === 'metric' ? '°C' : '°F'}
                     </p>
@@ -314,16 +302,38 @@ function App() {
                         minute: '2-digit'
                       })}
                     </p>
-                    {item.weather[0].main === 'Clear' ? (
-                      getClearIcon(item.dt)
-                    ) : (
-                      getWeatherIcon(item.weather[0].main, item.dt)
-                    )}
+                    {item.weather[0].main === 'Clear'
+                      ? getClearIcon(item.dt)
+                      : getWeatherIcon(item.weather[0].main, item.dt)}
                     <p>
                       {item.main.temp} {unit === 'metric' ? '°C' : '°F'}
                     </p>
                   </div>
                 ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'favorites' && (
+        <div className="favorites">
+          <h3>Favoritos</h3>
+          <div className="favoritesList">
+            {favorites.map((fav, index) => (
+              <button key={index} className="favoriteItem" onClick={() => selectFavorite(fav)}>
+                {fav}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'history' && (
+        <div className="history">
+          <h3>Historial</h3>
+          <div className="historyList">
+            {history.map((item, index) => (
+              <span key={index} className="historyItem">{item}</span>
+            ))}
           </div>
         </div>
       )}

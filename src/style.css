@@ -19,8 +19,8 @@ body {
 /* ===================== */
 .divPadre {
   position: relative;
-  width: 200%;
-  max-width: none;
+  width: 95%;
+  max-width: 60rem; /* Se aumenta el ancho máximo */
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0,0,0,0.1);
@@ -33,13 +33,28 @@ body {
   padding: 1.5rem;
   z-index: 1;
   margin: 1rem auto;
-  margin-right: 10rem;
   overflow: visible;
-  right: 20rem;
 }
 
 /* ===================== */
-/* Pestañas y Botones    */
+/* Header Interno        */
+/* ===================== */
+.headerInside {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* ===================== */
+/* Pestañas (Tabs)       */
 /* ===================== */
 .tabs {
   display: flex;
@@ -68,60 +83,20 @@ body {
   font-weight: bold;
 }
 
-.favoriteButton {
-  background: rgba(255, 215, 0, 0.8); /* Color dorado */
-  border: none;
-  color: #333;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s, transform 0.3s;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  margin-top: 1rem;
-}
-
-.favoriteButton:hover {
-  background: rgba(255, 215, 0, 1);
-  transform: scale(1.05);
-}
-
-.favoriteButton:active {
-  transform: scale(0.95);
-}
-
 /* ===================== */
 /* Contenedores de Contenido */
 /* ===================== */
-.headerInside {
+.divInfo,
+.divInput {
   width: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  z-index: 10;
   pointer-events: auto;
 }
 
 .divInfo {
   position: relative;
   z-index: 2;
-  width: 100%;
   text-align: center;
   margin-bottom: 1rem;
-  pointer-events: auto;
-}
-
-.divInput {
-  width: 100%;
-  margin-top: 1rem;
-  position: relative;
-  z-index: 10;
-  pointer-events: auto;
 }
 
 .weatherInfo {
@@ -145,7 +120,7 @@ body {
 /* Animaciones y Efectos   */
 /* ===================== */
 
-/* Animación de nubes */
+/* Nubes */
 .clouds {
   pointer-events: none !important;
   overflow: visible;
@@ -169,7 +144,7 @@ body {
   position: absolute;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 0 20px rgba(240, 237, 237, 0.1);
+  box-shadow: 0 0 20px rgba(240,237,237,0.1);
   pointer-events: none !important;
 }
 .cloud.cloud1 .circle1 {
@@ -213,7 +188,7 @@ body {
   100% { transform: translateX(120vw); }
 }
 
-/* Animación de lluvia */
+/* Lluvia */
 .rain-container {
   position: absolute;
   top: 0;
@@ -240,7 +215,7 @@ body {
 }
 
 /* ===================== */
-/* Iconos para Condición "Clear"  */
+/* Iconos para Condición Clear  */
 /* ===================== */
 .sunny-icon {
   width: 40px;
@@ -273,14 +248,14 @@ body {
   border-radius: 50%;
 }
 
-/* Keyframe único para el giro del sol */
+/* Keyframe para el giro del sol */
 @keyframes spinSun {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
 /* ===================== */
-/* Estilos para Fondos según Clima */
+/* Fondos según Clima    */
 /* ===================== */
 .weatherBackground.Snow {
   background: linear-gradient(180deg, #ffffff, #d9e3f0);
@@ -303,6 +278,33 @@ body {
 /* ===================== */
 /* Secciones Específicas */
 /* ===================== */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.tabs button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+  pointer-events: auto;
+  z-index: 11;
+}
+
+.tabs button.active,
+.tabs button:hover {
+  background: rgba(255, 255, 255, 0.5);
+  font-weight: bold;
+}
+
 .forecast {
   width: 100%;
   margin-top: 1rem;
@@ -377,76 +379,15 @@ body {
 }
 
 /* ===================== */
-/* Media Queries para Responsividad */
+/* Media Queries        */
 /* ===================== */
 @media (max-width: 768px) {
   .divPadre {
-    width: 90%;
+    width: 95%;
     margin-right: 0;
-    right: 0;
   }
-  /* En pantallas pequeñas se cambia la disposición del mainContainer a columna */
-  .mainContainer {
-    flex-direction: column;
-    overflow-x: visible;
-  }
-  /* Ajuste de márgenes y paddings si es necesario */
-  .headerInside, .tabs {
+  .tabs {
     flex-direction: column;
     gap: 0.5rem;
   }
-}
-/* Botón para cambiar unidades de temperatura */
-.toggleUnit {
-  background: linear-gradient(45deg, #6a82fb, #fc5c7d);
-  border: none;
-  border-radius: 5px;
-  color: white;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.3s, transform 0.3s;
-}
-.toggleUnit:hover {
-  transform: scale(1.05);
-  background: linear-gradient(45deg, #fc5c7d, #6a82fb);
-}
-.toggleUnit:active {
-  transform: scale(0.95);
-}
-
-/* Selector de idioma */
-.languageSelect {
-  background: rgba(255, 255, 255, 0.3);
-  border: none;
-  border-radius: 5px;
-  color: black;
-  padding: 0.3rem 0.8rem;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.languageSelect:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-.forecastModeTabs {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.forecastModeTabs button {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 5px;
-  color: white;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.forecastModeTabs button.active,
-.forecastModeTabs button:hover {
-  background: rgba(255, 255, 255, 0.5);
-  font-weight: bold;
 }
