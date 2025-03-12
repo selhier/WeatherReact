@@ -1,28 +1,154 @@
-import React, { useState, useEffect } from 'react';
+// src/App.js
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import AsyncSelect from 'react-select/async';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faExchangeAlt,
-  faStar,
-  faSun
-} from '@fortawesome/free-solid-svg-icons';
+import { faExchangeAlt, faStar } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
+import './i18n';
 import './style.css';
 
 const API_KEY = '9fa0bd6b6465044fc809ee5d027bcc55';
 
+// Función debounce para evitar llamadas excesivas
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    return new Promise((resolve) => {
+      timeout = setTimeout(async () => {
+        const result = await func(...args);
+        resolve(result);
+      }, delay);
+    });
+  };
+};
+
+// ErrorBoundary para capturar errores inesperados
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div role="alert" className="error-boundary">
+          Something went wrong. Please refresh the page.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
+  const { t, i18n } = useTranslation();
   const [city, setCity] = useState('');
   const [weatherData, setWeatherData] = useState(null);
   const [forecastData, setForecastData] = useState([]);
   const [error, setError] = useState('');
-  const [unit, setUnit] = useState('metric'); // 'metric' para °C, 'imperial' para °F
-  const [language, setLanguage] = useState('en');
+  const [unit, setUnit] = useState('metric');
   const [favorites, setFavorites] = useState([]);
   const [history, setHistory] = useState([]);
-  const [activeTab, setActiveTab] = useState('weather'); // 'weather', 'forecast', 'favorites', 'history'
-  const [forecastMode, setForecastMode] = useState('days'); // 'hours' o 'days'
+  const [activeTab, setActiveTab] = useState('weather');
+  const [forecastMode, setForecastMode] = useState('days');
+  const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState('light'); // "light" o "dark"
+  const [notification, setNotification] = useState('');
 
-  // Obtener ubicación y ciudad inicial
+  const cache = useRef({});
+
+  // Cargar favoritos e historial desde localStorage al inicio
+  useEffect(() => {
+    const storedFavorites = localStorage.getItem('favorites');
+    const storedHistory = localStorage.getItem('history');
+    if (storedFavorites) {
+      setFavorites(JSON.parse(storedFavorites));
+    }
+    if (storedHistory) {
+      setHistory(JSON.parse(storedHistory));
+    }
+  }, []);
+
+  // Persistir favoritos e historial en localStorage
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem('history', JSON.stringify(history));
+  }, [history]);
+
+  // Función para cargar opciones en AsyncSelect con caché
+  const loadOptions = async (inputValue) => {
+    if (inputValue.length > 2) {
+      if (cache.current[inputValue]) return cache.current[inputValue];
+      try {
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/find?q=${inputValue}&appid=${API_KEY}&units=${unit}&lang=${i18n.language}`
+        );
+        const result = await response.json();
+        const options = result.list.map((city) => ({
+          label: city.name,
+          value: city.name,
+        }));
+        cache.current[inputValue] = options;
+        return options;
+      } catch (err) {
+        console.error(err);
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const debouncedLoadOptions = useMemo(() => debounce(loadOptions, 300), [unit, i18n.language]);
+
+  // Función para obtener clima y pronóstico
+  const fetchWeather = useCallback(async (cityName) => {
+    setLoading(true);
+    setError('');
+    try {
+      const weatherResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=${unit}&lang=${i18n.language}`
+      );
+      if (!weatherResponse.ok) throw new Error(t('cityNotFound'));
+      const weather = await weatherResponse.json();
+      setWeatherData(weather);
+      setHistory((prev) => [cityName, ...prev.filter((c) => c !== cityName)]);
+      // Notificación: alerta si el clima es extremo
+      const temp = weather.main.temp;
+      const condition = weather.weather[0].main;
+      if (condition === "Thunderstorm" || temp > 35 || temp < -5) {
+        setNotification(t('extremeAlert'));
+      } else {
+        setNotification('');
+      }
+    } catch (err) {
+      setError(err.message || t('cityNotFound'));
+      setWeatherData(null);
+    }
+    try {
+      const forecastResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${API_KEY}&units=${unit}&lang=${i18n.language}`
+      );
+      if (!forecastResponse.ok) throw new Error(t('forecastNotFound'));
+      const forecast = await forecastResponse.json();
+      setForecastData(forecast.list);
+    } catch (err) {
+      setError(err.message || t('forecastNotFound'));
+      setForecastData([]);
+    }
+    setLoading(false);
+  }, [unit, i18n.language, t]);
+
+  // Obtener ubicación inicial mediante geolocalización
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
@@ -40,196 +166,203 @@ function App() {
           setCity(cityName);
           fetchWeather(cityName);
         } catch (err) {
-          setError('Error al obtener la ubicación');
+          setError(t('errorLocation'));
         }
       });
     }
-  }, []);
+  }, [fetchWeather, t]);
 
-  // Función para obtener clima y pronóstico
-  const fetchWeather = async (cityName) => {
-    setError('');
-    try {
-      const weatherResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=${unit}&lang=${language}`
-      );
-      if (!weatherResponse.ok) throw new Error('Ciudad no encontrada');
-      const weather = await weatherResponse.json();
-      setWeatherData(weather);
-      setHistory((prev) => [cityName, ...prev.filter((c) => c !== cityName)]);
-    } catch (err) {
-      setError(err.message);
-      setWeatherData(null);
-    }
-    try {
-      const forecastResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${API_KEY}&units=${unit}&lang=${language}`
-      );
-      if (!forecastResponse.ok) throw new Error('Pronóstico no encontrado');
-      const forecast = await forecastResponse.json();
-      setForecastData(forecast.list);
-    } catch (err) {
-      setError(err.message);
-      setForecastData([]);
-    }
-  };
-
-  // Función para cargar opciones en AsyncSelect
-  const loadOptions = async (inputValue) => {
-    if (inputValue.length > 2) {
-      try {
-        const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/find?q=${inputValue}&appid=${API_KEY}&units=${unit}&lang=${language}`
-        );
-        const result = await response.json();
-        return result.list.map((city) => ({
-          label: city.name,
-          value: city.name
-        }));
-      } catch (err) {
-        console.error(err);
-        return [];
-      }
-    }
-    return [];
-  };
-
-  const handleCityChange = (selectedOption) => {
+  const handleCityChange = useCallback((selectedOption) => {
     setCity(selectedOption.value);
     fetchWeather(selectedOption.value);
-  };
+  }, [fetchWeather]);
 
-  const toggleUnit = () => {
+  const toggleUnit = useCallback(() => {
     const newUnit = unit === 'metric' ? 'imperial' : 'metric';
     setUnit(newUnit);
     if (city) fetchWeather(city);
-  };
+  }, [unit, city, fetchWeather]);
 
-  const handleLanguageChange = (e) => {
+  const handleLanguageChange = useCallback((e) => {
     const newLang = e.target.value;
-    setLanguage(newLang);
+    i18n.changeLanguage(newLang);
     if (city) fetchWeather(city);
-  };
+  }, [city, fetchWeather, i18n]);
 
-  const addFavorite = () => {
+  const addFavorite = useCallback(() => {
     if (city && !favorites.includes(city)) {
-      setFavorites([...favorites, city]);
+      setFavorites((prev) => [...prev, city]);
     }
-  };
+  }, [city, favorites]);
 
-  const selectFavorite = (fav) => {
+  const selectFavorite = useCallback((fav) => {
     setCity(fav);
     fetchWeather(fav);
     setActiveTab('weather');
-  };
+  }, [fetchWeather]);
 
-  // Función auxiliar para "Clear": si es de día o de noche
-  const getClearIcon = (timestamp = Math.floor(Date.now() / 1000)) => {
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  }, []);
+
+  // Íconos de clima
+  const getClearIcon = useCallback((timestamp = Math.floor(Date.now() / 1000)) => {
     if (weatherData && weatherData.sys) {
       const { sunrise, sunset } = weatherData.sys;
-      if (timestamp < sunrise || timestamp > sunset) {
-        return <div className="moon-icon">🌙</div>;
-      } else {
-        return <div className="sunny-icon"></div>;
-      }
+      return timestamp < sunrise || timestamp > sunset 
+        ? <div className="moon-icon" aria-hidden="true">🌙</div>
+        : <div className="sunny-icon" aria-hidden="true"></div>;
     }
-    return <div className="sunny-icon"></div>;
-  };
+    return <div className="sunny-icon" aria-hidden="true"></div>;
+  }, [weatherData]);
 
-  // Función para retornar el ícono según el estado del clima utilizando clases CSS
-  const getWeatherIcon = (weather, timestamp) => {
+  const getWeatherIcon = useCallback((weather, timestamp) => {
     switch (weather) {
       case 'Clear':
         return getClearIcon(timestamp);
       case 'Rain':
-        return <div className="rain-icon"></div>;
+        return <div className="rain-icon" aria-hidden="true"></div>;
       case 'Clouds':
-        return <div className="cloud-icon"></div>;
+        return <div className="cloud-icon" aria-hidden="true"></div>;
       case 'Snow':
-        return <div className="snow-icon"></div>;
+        return <div className="snow-icon" aria-hidden="true"></div>;
       case 'Thunderstorm':
-        return <div className="thunder-icon"></div>;
+        return <div className="thunder-icon" aria-hidden="true"></div>;
       case 'Drizzle':
-        return <div className="drizzle-icon"></div>;
+        return <div className="drizzle-icon" aria-hidden="true"></div>;
       case 'Mist':
-        return <div className="mist-icon"></div>;
+        return <div className="mist-icon" aria-hidden="true"></div>;
       default:
-        return <div className="cloud-icon"></div>;
+        return <div className="cloud-icon" aria-hidden="true"></div>;
     }
-  };
+  }, [getClearIcon]);
 
-  // Filtrar el pronóstico para datos diarios a las 12:00
   const dailyForecast = forecastData.filter((item) => item.dt_txt.includes('12:00:00'));
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Asignar clase de fondo para nubes o lluvia según el estado
+  // Botón para compartir (usa API nativa o copia enlace)
+  const handleShare = async () => {
+    const shareData = {
+      title: t('welcome'),
+      text: `${t('weatherTab')}: ${city} - ${weatherData && weatherData.main.temp} ${unit === 'metric' ? '°C' : '°F'}`,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error("Error sharing", err);
+      }
+    } else {
+      await navigator.clipboard.writeText(shareData.url);
+      alert(t('shareCopied') || "Link copied to clipboard");
+    }
+  };
+
+  // Botón para ver mapa (abre Google Maps con coordenadas)
+  const handleViewMap = () => {
+    if (weatherData && weatherData.coord) {
+      const { lat, lon } = weatherData.coord;
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      window.open(mapUrl, '_blank');
+    }
+  };
+
   let backgroundClass = '';
   if (weatherData) {
-    if (weatherData.weather[0].main === 'Clouds') {
-      backgroundClass = 'Clouds';
-    } else if (weatherData.weather[0].main === 'Rain') {
-      backgroundClass = 'Rain';
+    switch (weatherData.weather[0].main) {
+      case 'Clouds':
+        backgroundClass = 'Clouds';
+        break;
+      case 'Rain':
+        backgroundClass = 'Rain';
+        break;
+      case 'Snow':
+        backgroundClass = 'Snow';
+        break;
+      case 'Thunderstorm':
+        backgroundClass = 'Thunderstorm';
+        break;
+      default:
+        backgroundClass = '';
     }
   }
 
   return (
-    <div className={`divPadre weatherBackground ${backgroundClass} ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
-      {error && <div className="error">{error}</div>}
+    <div className={`divPadre ${theme} weatherBackground ${backgroundClass} ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
+      {/* Notificación para clima extremo */}
+      {notification && <div className="notification" role="alert">{notification}</div>}
+      
+      {/* Barra superior con toggle de tema */}
+      <div className="topBar" role="banner">
+        <button onClick={toggleTheme} className="btn themeToggle" aria-label={t('toggleTheme')}>
+          {t('toggleTheme')}
+        </button>
+      </div>
 
-      {/* Renderizado de animación de nubes si el clima es Clouds o Rain */}
-      {weatherData && (weatherData.weather[0].main === 'Clouds' || weatherData.weather[0].main === 'Rain') && (
-        <div id="background-wrap">
-          <div className="x1"><div className="cloud"></div></div>
-          <div className="x2"><div className="cloud"></div></div>
-          <div className="x3"><div className="cloud"></div></div>
-          <div className="x4"><div className="cloud"></div></div>
-          <div className="x5"><div className="cloud"></div></div>
-        </div>
-      )}
-
-      {/* Header interno */}
       <div className="headerInside">
         <AsyncSelect
           cacheOptions
-          loadOptions={loadOptions}
+          loadOptions={debouncedLoadOptions}
           onChange={handleCityChange}
-          placeholder="Selecciona una ciudad..."
-          noOptionsMessage={() => 'No hay opciones disponibles'}
+          placeholder={t('selectCity')}
+          noOptionsMessage={() => t('selectCity')}
           menuPortalTarget={document.body}
           styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+          aria-label={t('selectCity')}
         />
-        <button className="toggleUnit" onClick={toggleUnit}>
+        <button className="btn toggleUnit" onClick={toggleUnit} aria-label="Toggle temperature unit">
           <FontAwesomeIcon icon={faExchangeAlt} /> {unit === 'metric' ? '°C' : '°F'}
         </button>
-        <select className="languageSelect" value={language} onChange={handleLanguageChange}>
+        <select className="languageSelect" value={i18n.language} onChange={handleLanguageChange} aria-label="Select language">
           <option value="en">EN</option>
           <option value="es">ES</option>
         </select>
       </div>
 
-      {/* Pestañas de Navegación */}
-      <div className="tabs">
-        <button className={activeTab === 'weather' ? 'active' : ''} onClick={() => setActiveTab('weather')}>
-          Clima
+      <div className="tabs" role="tablist">
+        <button
+          className={`btn ${activeTab === 'weather' ? 'active' : ''}`}
+          onClick={() => setActiveTab('weather')}
+          role="tab"
+          aria-selected={activeTab === 'weather'}
+        >
+          {t('weatherTab')}
         </button>
-        <button className={activeTab === 'forecast' ? 'active' : ''} onClick={() => setActiveTab('forecast')}>
-          Pronóstico
+        <button
+          className={`btn ${activeTab === 'forecast' ? 'active' : ''}`}
+          onClick={() => setActiveTab('forecast')}
+          role="tab"
+          aria-selected={activeTab === 'forecast'}
+        >
+          {t('forecastTab')}
         </button>
-        <button className={activeTab === 'favorites' ? 'active' : ''} onClick={() => setActiveTab('favorites')}>
-          Favoritos
+        <button
+          className={`btn ${activeTab === 'favorites' ? 'active' : ''}`}
+          onClick={() => setActiveTab('favorites')}
+          role="tab"
+          aria-selected={activeTab === 'favorites'}
+        >
+          {t('favoritesTab')}
         </button>
-        <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>
-          Historial
+        <button
+          className={`btn ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+          role="tab"
+          aria-selected={activeTab === 'history'}
+        >
+          {t('historyTab')}
         </button>
       </div>
 
-      {/* Contenido según pestaña */}
+      {loading && <div className="spinner" role="status" aria-live="polite">{t('loading')}</div>}
+
       {activeTab === 'weather' && (
-        <div className="mainContainer">
+        <div className="mainContainer" role="tabpanel">
           <div className="divInfo">
             <h2>{city}</h2>
             {weatherData ? (
@@ -238,39 +371,49 @@ function App() {
                   ? getClearIcon()
                   : getWeatherIcon(weatherData.weather[0].main)}
                 <div className="weatherDetails">
-                  <p>Temperatura: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-                  <p>Sensación: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
-                  <p>Humedad: {weatherData.main.humidity}%</p>
-                  <p>Viento: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
-                  <p>Presión: {weatherData.main.pressure} hPa</p>
-                  <p>Amanecer: {formatTime(weatherData.sys.sunrise)}</p>
-                  <p>Atardecer: {formatTime(weatherData.sys.sunset)}</p>
-                  <p>Condición: {weatherData.weather[0].description}</p>
+                  <p>{t('temperature')}: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>{t('feelsLike')}: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>{t('humidity')}: {weatherData.main.humidity}%</p>
+                  <p>{t('wind')}: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
+                  <p>{t('pressure')}: {weatherData.main.pressure} hPa</p>
+                  <p>{t('sunrise')}: {formatTime(weatherData.sys.sunrise)}</p>
+                  <p>{t('sunset')}: {formatTime(weatherData.sys.sunset)}</p>
+                  <p>{t('condition')}: {weatherData.weather[0].description}</p>
                 </div>
-                <button className="favoriteButton" onClick={addFavorite}>
-                  <FontAwesomeIcon icon={faStar} /> Agregar a Favoritos
-                </button>
+                <div className="actionButtons">
+                  <button className="btn favoriteButton" onClick={addFavorite} aria-label={t('addFavorite')}>
+                    <FontAwesomeIcon icon={faStar} /> {t('addFavorite')}
+                  </button>
+                  <button className="btn mapButton" onClick={handleViewMap} aria-label={t('viewMap')}>
+                    {t('viewMap')}
+                  </button>
+                  <button className="btn shareButton" onClick={handleShare} aria-label={t('share')}>
+                    {t('share')}
+                  </button>
+                </div>
               </div>
             ) : (
-              <p>Cargando datos...</p>
+              !loading && <p>{t('loading')}</p>
             )}
           </div>
         </div>
       )}
 
       {activeTab === 'forecast' && (
-        <div className="forecast">
-          <h3>Pronóstico para {weatherData ? `${weatherData.name}, ${weatherData.sys.country}` : city}</h3>
+        <div className="forecast" role="tabpanel">
+          <h3>{t('forecastTab')} {city}</h3>
           <div className="forecastModeTabs">
             <button
-              className={forecastMode === 'hours' ? 'active' : ''}
+              className={`btn ${forecastMode === 'hours' ? 'active' : ''}`}
               onClick={() => setForecastMode('hours')}
+              aria-label="View hours forecast"
             >
               Próximas Horas
             </button>
             <button
-              className={forecastMode === 'days' ? 'active' : ''}
+              className={`btn ${forecastMode === 'days' ? 'active' : ''}`}
               onClick={() => setForecastMode('days')}
+              aria-label="View days forecast"
             >
               Próximos Días
             </button>
@@ -279,12 +422,12 @@ function App() {
             {forecastMode === 'days'
               ? dailyForecast.map((item) => (
                   <div key={item.dt} className="forecastItem">
-                    <p>{new Date(item.dt * 1000).toLocaleDateString(language, {
+                    <p>{new Date(item.dt * 1000).toLocaleDateString(i18n.language, {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric'
                     })}</p>
-                    <p>{new Date(item.dt * 1000).toLocaleTimeString(language, {
+                    <p>{new Date(item.dt * 1000).toLocaleTimeString(i18n.language, {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}</p>
@@ -296,7 +439,7 @@ function App() {
                 ))
               : forecastData.slice(0, 5).map((item) => (
                   <div key={item.dt} className="forecastItem">
-                    <p>{new Date(item.dt * 1000).toLocaleTimeString(language, {
+                    <p>{new Date(item.dt * 1000).toLocaleTimeString(i18n.language, {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}</p>
@@ -311,11 +454,11 @@ function App() {
       )}
 
       {activeTab === 'favorites' && (
-        <div className="favorites">
-          <h3>Favoritos</h3>
+        <div className="favorites" role="tabpanel">
+          <h3>{t('favoritesTab')}</h3>
           <div className="favoritesList">
             {favorites.map((fav, index) => (
-              <button key={index} className="favoriteItem" onClick={() => selectFavorite(fav)}>
+              <button key={index} className="btn favoriteItem" onClick={() => selectFavorite(fav)} aria-label={`Select ${fav}`}>
                 {fav}
               </button>
             ))}
@@ -324,8 +467,8 @@ function App() {
       )}
 
       {activeTab === 'history' && (
-        <div className="history">
-          <h3>Historial</h3>
+        <div className="history" role="tabpanel">
+          <h3>{t('historyTab')}</h3>
           <div className="historyList">
             {history.map((item, index) => (
               <span key={index} className="historyItem">{item}</span>
@@ -337,4 +480,12 @@ function App() {
   );
 }
 
-export default App;
+function WrappedApp() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}
+
+export default WrappedApp;

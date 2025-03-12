@@ -1,0 +1,22 @@
+{
+    "welcome": "Bienvenido a la aplicación del clima",
+    "selectCity": "Selecciona una ciudad...",
+    "weatherTab": "Clima",
+    "forecastTab": "Pronóstico",
+    "favoritesTab": "Favoritos",
+    "historyTab": "Historial",
+    "temperature": "Temperatura",
+    "feelsLike": "Sensación",
+    "humidity": "Humedad",
+    "wind": "Viento",
+    "pressure": "Presión",
+    "sunrise": "Amanecer",
+    "sunset": "Atardecer",
+    "condition": "Condición",
+    "loading": "Cargando...",
+    "errorLocation": "Error al obtener la ubicación",
+    "cityNotFound": "Ciudad no encontrada",
+    "forecastNotFound": "Pronóstico no encontrado",
+    "addFavorite": "Agregar a Favoritos"
+  }
+  

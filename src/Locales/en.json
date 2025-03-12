@@ -1,0 +1,22 @@
+{
+    "welcome": "Welcome to the Weather App",
+    "selectCity": "Select a city...",
+    "weatherTab": "Weather",
+    "forecastTab": "Forecast",
+    "favoritesTab": "Favorites",
+    "historyTab": "History",
+    "temperature": "Temperature",
+    "feelsLike": "Feels like",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "pressure": "Pressure",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "condition": "Condition",
+    "loading": "Loading...",
+    "errorLocation": "Error getting location",
+    "cityNotFound": "City not found",
+    "forecastNotFound": "Forecast not found",
+    "addFavorite": "Add to Favorites"
+  }
+  
