@@ -33,7 +33,6 @@ body {
   padding: 1.5rem;
   margin: 1rem auto;
   overflow: visible;
-  overflow-y: auto; /* Ensure the content is scrollable */
 }
 
 /* ===================== */
@@ -49,15 +48,6 @@ body {
   font-size: 1rem;
   transition: background 0.3s, transform 0.3s;
   margin: 0.5rem;
-  margin: 5px;
-  padding: 10px;
-  width: 100%;
-  text-align: center;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
 }
 .btn:hover {
   transform: scale(1.05);
@@ -65,12 +55,6 @@ body {
 }
 .btn:active {
   transform: scale(0.95);
-}
-.btn.active {
-  background-color: #0056b3;
-}
-.btn:focus {
-  outline: none;
 }
 
 /* ===================== */
@@ -86,10 +70,6 @@ body {
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
 }
 
 /* ===================== */
@@ -100,9 +80,6 @@ body {
   justify-content: center;
   gap: 1rem;
   margin: 1rem 0;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px;
 }
 .tabs button.active,
 .tabs button:hover {
@@ -219,35 +196,24 @@ body {
   margin-top: 1rem;
   text-align: center;
   color: white;
-  padding: 10px;
 }
 .forecastList {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 .forecastItem {
   background: rgba(255, 255, 255, 0.2);
   padding: 0.5rem;
   border-radius: 8px;
   min-width: 60px;
-  margin: 5px 0;
-  padding: 10px;
-  width: 100%;
-  text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 5px;
 }
 .favorites {
   width: 100%;
   margin-top: 1rem;
   text-align: center;
   color: white;
-  padding: 10px;
 }
 .favoritesList {
   display: flex;
@@ -256,9 +222,6 @@ body {
   overflow-x: auto;
   width: 100%;
   padding: 0.5rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 .favoriteItem {
   background: rgba(255, 255, 255, 0.2);
@@ -267,19 +230,12 @@ body {
   border-radius: 5px;
   cursor: pointer;
   color: white;
-  margin: 5px 0;
-  padding: 10px;
-  width: 100%;
-  text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 5px;
 }
 .history {
   width: 100%;
   margin-top: 1rem;
   text-align: center;
   color: white;
-  padding: 10px;
 }
 .historyList {
   display: flex;
@@ -288,19 +244,10 @@ body {
   overflow-x: auto;
   width: 100%;
   padding: 0.5rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 .historyItem {
   background: rgba(255, 255, 255, 0.2);
   padding: 0.3rem 0.6rem;
-  border-radius: 5px;
-  margin: 5px 0;
-  padding: 10px;
-  width: 100%;
-  text-align: center;
-  border: 1px solid #ccc;
   border-radius: 5px;
 }
 
@@ -317,16 +264,6 @@ body {
   }
   .flexContainer {
     flex-direction: column;
-  }
-}
-
-@media (min-width: 600px) {
-  .headerInside, .tabs, .actionButtons {
-    flex-direction: row;
-  }
-
-  .btn {
-    width: auto;
   }
 }
 
@@ -347,32 +284,4 @@ body {
 .dark {
   background: #333;
   color: #eee;
-}
-
-.topBar {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-}
-
-.mainContainer, .forecast, .favorites, .history {
-  padding: 10px;
-}
-
-.weatherMain {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.weatherDetails {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.actionButtons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }

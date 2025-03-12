@@ -293,193 +293,190 @@ function App() {
   }
 
   return (
-    <>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <div className={`divPadre ${theme} weatherBackground ${backgroundClass} ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
-        {/* Notificación para clima extremo */}
-        {notification && <div className="notification" role="alert">{notification}</div>}
-        
-        {/* Barra superior con toggle de tema */}
-        <div className="topBar" role="banner">
-          <button onClick={toggleTheme} className="btn themeToggle" aria-label={t('toggleTheme')}>
-            {t('toggleTheme')}
-          </button>
-        </div>
-
-        <div className="headerInside">
-          <AsyncSelect
-            cacheOptions
-            loadOptions={debouncedLoadOptions}
-            onChange={handleCityChange}
-            placeholder={t('selectCity')}
-            noOptionsMessage={() => t('selectCity')}
-            menuPortalTarget={document.body}
-            styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-            aria-label={t('selectCity')}
-          />
-          <button className="btn toggleUnit" onClick={toggleUnit} aria-label="Toggle temperature unit">
-            <FontAwesomeIcon icon={faExchangeAlt} /> {unit === 'metric' ? '°C' : '°F'}
-          </button>
-          <select className="languageSelect" value={i18n.language} onChange={handleLanguageChange} aria-label="Select language">
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-          </select>
-        </div>
-
-        <div className="tabs" role="tablist">
-          <button
-            className={`btn ${activeTab === 'weather' ? 'active' : ''}`}
-            onClick={() => setActiveTab('weather')}
-            role="tab"
-            aria-selected={activeTab === 'weather'}
-          >
-            {t('weatherTab')}
-          </button>
-          <button
-            className={`btn ${activeTab === 'forecast' ? 'active' : ''}`}
-            onClick={() => setActiveTab('forecast')}
-            role="tab"
-            aria-selected={activeTab === 'forecast'}
-          >
-            {t('forecastTab')}
-          </button>
-          <button
-            className={`btn ${activeTab === 'favorites' ? 'active' : ''}`}
-            onClick={() => setActiveTab('favorites')}
-            role="tab"
-            aria-selected={activeTab === 'favorites'}
-          >
-            {t('favoritesTab')}
-          </button>
-          <button
-            className={`btn ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
-            role="tab"
-            aria-selected={activeTab === 'history'}
-          >
-            {t('historyTab')}
-          </button>
-        </div>
-
-        {loading && <div className="spinner" role="status" aria-live="polite">{t('loading')}</div>}
-
-        {activeTab === 'weather' && (
-          <div className="mainContainer" role="tabpanel">
-            <div className="divInfo">
-              <h2>{city}</h2>
-              {weatherData ? (
-                <div className="weatherMain">
-                  {weatherData.weather[0].main === 'Clear'
-                    ? getClearIcon()
-                    : getWeatherIcon(weatherData.weather[0].main)}
-                  <div className="weatherDetails">
-                    <p>{t('temperature')}: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-                    <p>{t('feelsLike')}: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
-                    <p>{t('humidity')}: {weatherData.main.humidity}%</p>
-                    <p>{t('wind')}: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
-                    <p>{t('pressure')}: {weatherData.main.pressure} hPa</p>
-                    <p>{t('sunrise')}: {formatTime(weatherData.sys.sunrise)}</p>
-                    <p>{t('sunset')}: {formatTime(weatherData.sys.sunset)}</p>
-                    <p>{t('condition')}: {weatherData.weather[0].description}</p>
-                  </div>
-                  <div className="actionButtons">
-                    <button className="btn favoriteButton" onClick={addFavorite} aria-label={t('addFavorite')}>
-                      <FontAwesomeIcon icon={faStar} /> {t('addFavorite')}
-                    </button>
-                    <button className="btn mapButton" onClick={handleViewMap} aria-label={t('viewMap')}>
-                      {t('viewMap')}
-                    </button>
-                    <button className="btn shareButton" onClick={handleShare} aria-label={t('share')}>
-                      {t('share')}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                !loading && <p>{t('loading')}</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'forecast' && (
-          <div className="forecast" role="tabpanel">
-            <h3>{t('forecastTab')} {city}</h3>
-            <div className="forecastModeTabs">
-              <button
-                className={`btn ${forecastMode === 'hours' ? 'active' : ''}`}
-                onClick={() => setForecastMode('hours')}
-                aria-label="View hours forecast"
-              >
-                Próximas Horas
-              </button>
-              <button
-                className={`btn ${forecastMode === 'days' ? 'active' : ''}`}
-                onClick={() => setForecastMode('days')}
-                aria-label="View days forecast"
-              >
-                Próximos Días
-              </button>
-            </div>
-            <div className="forecastList">
-              {forecastMode === 'days'
-                ? dailyForecast.map((item) => (
-                    <div key={item.dt} className="forecastItem">
-                      <p>{new Date(item.dt * 1000).toLocaleDateString(i18n.language, {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric'
-                      })}</p>
-                      <p>{new Date(item.dt * 1000).toLocaleTimeString(i18n.language, {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}</p>
-                      {item.weather[0].main === 'Clear'
-                        ? getClearIcon(item.dt)
-                        : getWeatherIcon(item.weather[0].main, item.dt)}
-                      <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-                    </div>
-                  ))
-                : forecastData.slice(0, 5).map((item) => (
-                    <div key={item.dt} className="forecastItem">
-                      <p>{new Date(item.dt * 1000).toLocaleTimeString(i18n.language, {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}</p>
-                      {item.weather[0].main === 'Clear'
-                        ? getClearIcon(item.dt)
-                        : getWeatherIcon(item.weather[0].main, item.dt)}
-                      <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
-                    </div>
-                  ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'favorites' && (
-          <div className="favorites" role="tabpanel">
-            <h3>{t('favoritesTab')}</h3>
-            <div className="favoritesList">
-              {favorites.map((fav, index) => (
-                <button key={index} className="btn favoriteItem" onClick={() => selectFavorite(fav)} aria-label={`Select ${fav}`}>
-                  {fav}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'history' && (
-          <div className="history" role="tabpanel">
-            <h3>{t('historyTab')}</h3>
-            <div className="historyList">
-              {history.map((item, index) => (
-                <span key={index} className="historyItem">{item}</span>
-              ))}
-            </div>
-          </div>
-        )}
+    <div className={`divPadre ${theme} weatherBackground ${backgroundClass} ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
+      {/* Notificación para clima extremo */}
+      {notification && <div className="notification" role="alert">{notification}</div>}
+      
+      {/* Barra superior con toggle de tema */}
+      <div className="topBar" role="banner">
+        <button onClick={toggleTheme} className="btn themeToggle" aria-label={t('Dark mode')}>
+          {t('toggleTheme')}
+        </button>
       </div>
-    </>
+
+      <div className="headerInside">
+        <AsyncSelect
+          cacheOptions
+          loadOptions={debouncedLoadOptions}
+          onChange={handleCityChange}
+          placeholder={t('selectCity')}
+          noOptionsMessage={() => t('selectCity')}
+          menuPortalTarget={document.body}
+          styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+          aria-label={t('selectCity')}
+        />
+        <button className="btn toggleUnit" onClick={toggleUnit} aria-label="Toggle temperature unit">
+          <FontAwesomeIcon icon={faExchangeAlt} /> {unit === 'metric' ? '°C' : '°F'}
+        </button>
+        <select className="languageSelect" value={i18n.language} onChange={handleLanguageChange} aria-label="Select language">
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+        </select>
+      </div>
+
+      <div className="tabs" role="tablist">
+        <button
+          className={`btn ${activeTab === 'weather' ? 'active' : ''}`}
+          onClick={() => setActiveTab('weather')}
+          role="tab"
+          aria-selected={activeTab === 'weather'}
+        >
+          {t('weatherTab')}
+        </button>
+        <button
+          className={`btn ${activeTab === 'forecast' ? 'active' : ''}`}
+          onClick={() => setActiveTab('forecast')}
+          role="tab"
+          aria-selected={activeTab === 'forecast'}
+        >
+          {t('forecastTab')}
+        </button>
+        <button
+          className={`btn ${activeTab === 'favorites' ? 'active' : ''}`}
+          onClick={() => setActiveTab('favorites')}
+          role="tab"
+          aria-selected={activeTab === 'favorites'}
+        >
+          {t('favoritesTab')}
+        </button>
+        <button
+          className={`btn ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+          role="tab"
+          aria-selected={activeTab === 'history'}
+        >
+          {t('historyTab')}
+        </button>
+      </div>
+
+      {loading && <div className="spinner" role="status" aria-live="polite">{t('loading')}</div>}
+
+      {activeTab === 'weather' && (
+        <div className="mainContainer" role="tabpanel">
+          <div className="divInfo">
+            <h2>{city}</h2>
+            {weatherData ? (
+              <div className="weatherMain">
+                {weatherData.weather[0].main === 'Clear'
+                  ? getClearIcon()
+                  : getWeatherIcon(weatherData.weather[0].main)}
+                <div className="weatherDetails">
+                  <p>{t('temperature')}: {weatherData.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>{t('feelsLike')}: {weatherData.main.feels_like} {unit === 'metric' ? '°C' : '°F'}</p>
+                  <p>{t('humidity')}: {weatherData.main.humidity}%</p>
+                  <p>{t('wind')}: {weatherData.wind.speed} {unit === 'metric' ? 'm/s' : 'mph'}</p>
+                  <p>{t('pressure')}: {weatherData.main.pressure} hPa</p>
+                  <p>{t('sunrise')}: {formatTime(weatherData.sys.sunrise)}</p>
+                  <p>{t('sunset')}: {formatTime(weatherData.sys.sunset)}</p>
+                  <p>{t('condition')}: {weatherData.weather[0].description}</p>
+                </div>
+                <div className="actionButtons">
+                  <button className="btn favoriteButton" onClick={addFavorite} aria-label={t('addFavorite')}>
+                    <FontAwesomeIcon icon={faStar} /> {t('addFavorite')}
+                  </button>
+                  <button className="btn mapButton" onClick={handleViewMap} aria-label={t('viewMap')}>
+                    {t('viewMap')}
+                  </button>
+                  <button className="btn shareButton" onClick={handleShare} aria-label={t('share')}>
+                    {t('share')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              !loading && <p>{t('loading')}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'forecast' && (
+        <div className="forecast" role="tabpanel">
+          <h3>{t('forecastTab')} {city}</h3>
+          <div className="forecastModeTabs">
+            <button
+              className={`btn ${forecastMode === 'hours' ? 'active' : ''}`}
+              onClick={() => setForecastMode('hours')}
+              aria-label="View hours forecast"
+            >
+              Próximas Horas
+            </button>
+            <button
+              className={`btn ${forecastMode === 'days' ? 'active' : ''}`}
+              onClick={() => setForecastMode('days')}
+              aria-label="View days forecast"
+            >
+              Próximos Días
+            </button>
+          </div>
+          <div className="forecastList">
+            {forecastMode === 'days'
+              ? dailyForecast.map((item) => (
+                  <div key={item.dt} className="forecastItem">
+                    <p>{new Date(item.dt * 1000).toLocaleDateString(i18n.language, {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    })}</p>
+                    <p>{new Date(item.dt * 1000).toLocaleTimeString(i18n.language, {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</p>
+                    {item.weather[0].main === 'Clear'
+                      ? getClearIcon(item.dt)
+                      : getWeatherIcon(item.weather[0].main, item.dt)}
+                    <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
+                  </div>
+                ))
+              : forecastData.slice(0, 5).map((item) => (
+                  <div key={item.dt} className="forecastItem">
+                    <p>{new Date(item.dt * 1000).toLocaleTimeString(i18n.language, {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</p>
+                    {item.weather[0].main === 'Clear'
+                      ? getClearIcon(item.dt)
+                      : getWeatherIcon(item.weather[0].main, item.dt)}
+                    <p>{item.main.temp} {unit === 'metric' ? '°C' : '°F'}</p>
+                  </div>
+                ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'favorites' && (
+        <div className="favorites" role="tabpanel">
+          <h3>{t('favoritesTab')}</h3>
+          <div className="favoritesList">
+            {favorites.map((fav, index) => (
+              <button key={index} className="btn favoriteItem" onClick={() => selectFavorite(fav)} aria-label={`Select ${fav}`}>
+                {fav}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'history' && (
+        <div className="history" role="tabpanel">
+          <h3>{t('historyTab')}</h3>
+          <div className="historyList">
+            {history.map((item, index) => (
+              <span key={index} className="historyItem">{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
