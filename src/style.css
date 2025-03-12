@@ -262,7 +262,7 @@ body {
     flex-direction: column;
     gap: 0.5rem;
   }
-  .flexContainer {
+   .flexContainer {
     flex-direction: column;
   }
 }

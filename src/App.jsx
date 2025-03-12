@@ -59,31 +59,13 @@ function App() {
   const [activeTab, setActiveTab] = useState('weather');
   const [forecastMode, setForecastMode] = useState('days');
   const [loading, setLoading] = useState(false);
+
+  // Mejoras adicionales
   const [theme, setTheme] = useState('light'); // "light" o "dark"
-  const [notification, setNotification] = useState('');
+
+  const [notification, setNotification] = useState(''); // Notificación de alerta
 
   const cache = useRef({});
-
-  // Cargar favoritos e historial desde localStorage al inicio
-  useEffect(() => {
-    const storedFavorites = localStorage.getItem('favorites');
-    const storedHistory = localStorage.getItem('history');
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites));
-    }
-    if (storedHistory) {
-      setHistory(JSON.parse(storedHistory));
-    }
-  }, []);
-
-  // Persistir favoritos e historial en localStorage
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  useEffect(() => {
-    localStorage.setItem('history', JSON.stringify(history));
-  }, [history]);
 
   // Función para cargar opciones en AsyncSelect con caché
   const loadOptions = async (inputValue) => {
@@ -148,7 +130,7 @@ function App() {
     setLoading(false);
   }, [unit, i18n.language, t]);
 
-  // Obtener ubicación inicial mediante geolocalización
+  // Obtener ubicación inicial
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
@@ -294,12 +276,12 @@ function App() {
 
   return (
     <div className={`divPadre ${theme} weatherBackground ${backgroundClass} ${weatherData ? weatherData.weather[0].main.toLowerCase() : ''}`}>
-      {/* Notificación para clima extremo */}
+      {/* Notificación de alerta para clima extremo */}
       {notification && <div className="notification" role="alert">{notification}</div>}
       
-      {/* Barra superior con toggle de tema */}
+      {/* Barra de puntos y opciones de tema */}
       <div className="topBar" role="banner">
-        <button onClick={toggleTheme} className="btn themeToggle" aria-label={t('Dark mode')}>
+        <button onClick={toggleTheme} className="btn themeToggle" aria-label={t('Dark Mode')}>
           {t('toggleTheme')}
         </button>
       </div>
