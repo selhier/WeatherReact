@@ -19,7 +19,7 @@ body {
 /* ===================== */
 .divPadre {
   position: relative;
-  width: 95%;
+  width: 100%;
   max-width: 60rem;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 16px;
@@ -256,12 +256,14 @@ body {
 /* ===================== */
 @media (max-width: 768px) {
   .divPadre {
-    width: 95%;
-    margin-right: 0;
+    padding: 1rem;
   }
   .tabs {
     flex-direction: column;
     gap: 0.5rem;
+  }
+  .flexContainer {
+    flex-direction: column;
   }
 }
 

@@ -5,6 +5,10 @@
         {
             "src": "/locales/(.*)",
             "dest": "/locales/$1"
+        },
+        {
+            "src": "/locales/en.json",
+            "dest": "/locales/en.json"
         }
     ]
 }
