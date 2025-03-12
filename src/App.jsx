@@ -282,7 +282,7 @@ function App() {
       {/* Barra de puntos y opciones de tema */}
       <div className="topBar" role="banner">
         <button onClick={toggleTheme} className="btn themeToggle" aria-label={t('Dark Mode')}>
-          {t('toggleTheme')}
+          {t('Dark Mode')}
         </button>
       </div>
 
